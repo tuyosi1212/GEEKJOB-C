@@ -1,0 +1,4 @@
+windows 10
+CPU(プロセッサ）　 i7-8550U
+メモリ(RAM)        16GB
+SSD
