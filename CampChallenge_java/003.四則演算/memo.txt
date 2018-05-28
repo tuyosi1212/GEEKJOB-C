@@ -1,0 +1,39 @@
+<%-- 
+    Document   : java-charenge2-2
+    Created on : 2018/05/28, 16:26:46
+    Author     : tuyom
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+    </head>
+    <body>
+        <%
+            final int x = 100;
+            int y = 12;
+            int tasu = x + y;
+            int hiku = x - y;
+            int kakeru = x * y;
+            int waru = x / y;
+            int amari = x % y;
+            out.print("‘«‚µŽZ  ");
+            out.print("<br>");
+            out.print("ˆø‚«ŽZ  ");
+            out.print(hiku);
+            out.print("<br>");
+            out.print("Š|‚¯ŽZ  ");
+            out.print(kakeru);
+            out.print("<br>");
+            out.print("Š„‚èŽZ  ");
+            out.print(waru);
+            out.print("<br>");
+            out.print("—]‚è");
+            out.print(amari);
+          %>  
+        
+    </body>
+</html>
