@@ -1,0 +1,22 @@
+<%-- 
+    Document   : java-charenge-3-1
+    Created on : 2018/05/28, 17:47:58
+    Author     : tuyom
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+    </head>
+    <body>
+        <%
+            final String text = "groove";
+            String text2 = "-";
+            String text3 = "gear";
+            out.print(text + text2 + text3);
+        %>    
+    </body>
+</html>
