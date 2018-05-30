@@ -1,0 +1,30 @@
+<%-- 
+    Document   : java-charenge-4-3
+    Created on : 2018/05/30, 9:56:26
+    Author     : tuyom
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+    </head>
+    <body>
+        <%
+            char a = '‚P';
+            switch(a){
+                case 'A':
+                    out.print("‰pŒê");
+                    break;
+                case '‚ ':
+                    out.print("“ú–{Œê");
+                    break;   
+            }
+            %>
+            
+            
+            
+    </body>
+</html>
