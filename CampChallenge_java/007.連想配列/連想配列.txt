@@ -1,0 +1,27 @@
+<%-- 
+    Document   : java-charenge-6-1
+    Created on : 2018/05/30, 14:49:15
+    Author     : tuyom
+--%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+    </head>
+    <body>
+        <%@ page import="java.util.HashMap" %>
+        <%
+            HashMap<String,String> date = new HashMap<String,String>();
+            date.put("1","AAA"); date.put("hello", "world");
+            date.put("soeda", "33"); date.put("20","20");
+            out.print(date.get("1") + ("<br>"));
+            out.print(date.get("hello") + ("<br>"));
+            out.print(date.get("soeda") + ("<br>"));
+            out.print(date.get("20"));
+         %>   
+            
+    </body>
+</html>
