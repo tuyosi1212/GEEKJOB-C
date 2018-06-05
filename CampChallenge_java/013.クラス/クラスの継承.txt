@@ -1,0 +1,40 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.camp.servlet;
+
+/**
+ *
+ * @author tuyom
+ */
+public class k1 extends Human{
+    void mk1(){
+    this.score = 0;
+    this.name = null;  
+    System.out.print(this.score);
+    System.out.print(this.name);
+}
+}
+
+
+
+(実行ファイル)
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.camp.servlet;
+
+/**
+ *
+ * @author tuyom
+ */
+public class test {
+     public static void main(String[] args){
+        k1 k = new k1(); 
+        k.mk1(); 
+    }
+}
