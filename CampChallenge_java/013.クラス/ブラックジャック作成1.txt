@@ -1,0 +1,345 @@
+ 　　　　　　　　ブラックジャッククラス        
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.camp.servlet;
+import java.util.ArrayList;
+import java.util.Random;
+
+/**
+ *
+ * @author tuyom
+ */
+public class BkackJack {
+    public static void main(String[] args){
+         User user = new User();
+         Dealer dealer = new Dealer();
+         dealer.Dealer();
+         int money =1000;
+         ArrayList<Integer> Ucard = new ArrayList();
+         ArrayList<Integer> Dcard = new ArrayList();
+             Ucard = dealer.deal();
+             user.setCard(Ucard);
+             Dcard = dealer.deal();
+             dealer.setCard(Dcard);
+             int first = 0;
+         while(user.bet(money)){
+             if(first != 0){
+             Ucard = dealer.deal();    //二回目以降の最初の2枚のセット
+             user.setCard2(Ucard);
+             Dcard = dealer.deal();
+             dealer.setCard2(Dcard);  
+             }
+             int Utotal = user.open();
+             int Dtotal = dealer.open();
+             
+             System.out.println("ユーザー" + Utotal +"<br>");
+             System.out.println("ディーラー" + Dtotal +"<br>");
+             if(Utotal == 21 && Dtotal != 21){
+                 System.out.println("ユーザーの勝ちです。" +"<br>");
+             }else if(Utotal ==21 && Dtotal ==21){
+                 System.out.println("同点です。ディーラーの勝ちです。<br>");
+             }else if(Dtotal == 21 && Utotal != 21){
+                 System.out.println("ディーラーの勝ちです。<br>");
+             }else{
+                 boolean Dcs = dealer.checksum();
+                 while(Dcs == true){      //一枚引く
+                     dealer.setCard3(dealer.hit()); 
+                     dealer.open();
+                     Dtotal = dealer.open();
+                     dealer.checksum();
+                     Dcs =dealer.checksum(); 
+                   }
+                 boolean Ucs = user.checksum();
+                 while(Ucs == true){
+                     user.setCard3(dealer.hit());
+                     user.open();
+                     Utotal = user.open();
+                     user.checksum();
+                     Ucs = user.checksum();
+                 }
+                if(Utotal <= 21 && Dtotal <= 21){
+                    if(Utotal <= Dtotal){
+                        System.out.println("ディーラーの勝ちです。" + Dtotal +"<br>");
+                        money = money - 100;
+                    }else{
+                        System.out.println("ユーザーの勝ちです。" + Utotal + "<br>");
+                        money = money + 50;
+                    }
+                 }else if(Utotal <= 21 && Dtotal>21){
+                     System.out.println("ユーザーの勝ちです。" +Utotal + "<br>");
+                     money = money + 50;
+                 }else if(Utotal > 21 && Dtotal > 21){
+                     System.out.println("引き分け（ディーラーの勝ち）" + Dtotal + "<br>" + Utotal +"<br>");
+                     money = money - 100;
+                 }else{
+                     System.out.println("ディーラーの勝ちです。" + Dtotal + "<br>");
+                     money = money - 100;
+             }     
+         
+         
+         }
+        System.out.println(money + "円<br>");
+        for(int i = 0;i<Ucard.size();i++){
+            Ucard.set(i, 0);
+          }
+         for(int i = 0;i<Dcard.size();i++){
+            Dcard.set(i, 0);
+          }
+    
+         user.al();
+         dealer.al();
+         first = 1;
+         
+         }
+        
+         
+    }   
+        
+    }
+   
+         ディーラークラス
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.camp.servlet;
+
+import java.util.ArrayList;
+import java.util.Random;
+
+/**
+ *
+ * @author tuyom
+ */
+class Dealer extends Human{
+    protected ArrayList<Integer> Cards = new ArrayList();
+   
+    @Override
+    public int open() {
+         int total = 0;
+               for(int i=0;i<this.myCards.size();i++){
+                   if(this.myCards.get(i)>10){
+                       total = total + 10;
+                   }else{
+                       total = total + this.myCards.get(i);
+               }
+               }
+               return total;
+    }
+
+    @Override
+    public void setCard(ArrayList<Integer> sc) {
+        for(int i=0;i<sc.size();i++){
+        this.myCards.add(sc.get(i));
+        System.out.println("D" + myCards.get(i));
+
+    }
+    }
+
+    @Override
+    public boolean checksum() {
+        int total = open();
+        if(total < 17){                  //最低17になるまで引く
+            return true;
+        }else{
+            return false;
+            }
+    }
+    
+    public void Dealer(){                 //13*4のデッキ
+        for(int i=0;i<4;i++){
+            for(int a = 1; a < 13;a++){
+               Cards.add(a);
+            }
+        }
+    }
+    
+    public ArrayList<Integer> deal(){
+       ArrayList Adl = new ArrayList();         //最初の2枚
+       Random rand = new Random();
+       for(int i=0;i<2;i++){
+        int a = rand.nextInt(this.Cards.size());
+        Adl.add(this.Cards.get(a));
+       }
+       return Adl;
+   } 
+   
+   
+    public ArrayList<Integer> hit(){             //一枚引く
+        Random rnd = new Random();
+        ArrayList hit = new ArrayList();
+        int h = rnd.nextInt(this.Cards.size());
+        hit.add(this.Cards.get(h));
+        return hit;
+        
+    }
+    
+    public void  al(){
+      for(int i =0;i < this.myCards.size();i++){
+          this.myCards.set(i, 0);
+      }
+    
+    }
+   
+    public void setCard2(ArrayList<Integer> sc2){
+        for(int i=0;i<sc2.size();i++){
+        this.myCards.set(i,sc2.get(i));
+        System.out.println("D" + myCards.get(i));
+        
+    }
+    }
+    
+    public void setCard3(ArrayList<Integer> sc3){
+        for(int i=0;i<sc3.size();i++){
+        this.myCards.add(sc3.get(i));
+        System.out.println("D" + myCards.get(this.myCards.size()-1));
+    }
+    }
+}
+
+　　　　　　ユーザークラス
+
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.camp.servlet;
+
+import java.util.ArrayList;
+
+/**
+ *
+ * @author tuyom
+ */
+class User extends Human{
+
+    @Override
+    public int open() { 
+               int total = 0;
+               for(int i=0;i<this.myCards.size();i++){
+                   if(this.myCards.get(i)>10){
+                       total = total + 10;
+                   }else{
+                       total = total + this.myCards.get(i);
+               }
+               }
+               return total;
+    }
+
+    @Override
+    public void setCard(ArrayList<Integer> sc) {
+                for(int i=0;i<sc.size();i++){
+                this.myCards.add(sc.get(i));
+                System.out.println("U" + this.myCards.get(i));
+
+               }
+    }
+
+    @Override
+    public boolean checksum(){                 
+            int total = open();
+            Dealer dt = new Dealer();
+            int DT = dt.open();
+               return total < 17;
+    }
+    
+
+    
+    public boolean bet(int num){
+        return num > 50;
+    }
+ 
+ public void  al(){
+      for(int i =0;i < this.myCards.size();i++){
+          this.myCards.set(i, 0);
+      }
+    }
+ public void setCard2(ArrayList<Integer> al2){
+     for(int i=0;i<al2.size();i++){
+        this.myCards.set(i,al2.get(i));
+        System.out.println("U" + myCards.get(i));
+        
+    }
+   }
+ 
+ public void setCard3(ArrayList<Integer> sc3) {
+                for(int i=0;i<sc3.size();i++){
+                this.myCards.add(sc3.get(i));
+                System.out.println("U" + this.myCards.get(this.myCards.size()-1));
+               }
+    }
+  }
+    
+        
+    
+    
+ 
+ 　　　　　　Humanクラス
+
+       
+    /*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.camp.servlet;
+
+import java.util.ArrayList;
+
+
+
+/**
+ *
+ * @author tuyom
+ */
+abstract class Human {
+         protected  ArrayList<Integer> myCards = new ArrayList();
+         abstract protected int open();
+         abstract protected void setCard(ArrayList<Integer> sc);
+         abstract protected boolean checksum();
+         
+           }
+         
+        
+        
+            
+    
+     
+     
+
+     
+     
+    
+          
+         
+         
+     
+             
+    
+
+     
+     
+     
+  
+   
+        
+        
+    
+    
+
+
+    
+    
+
+
+
+
+
+
