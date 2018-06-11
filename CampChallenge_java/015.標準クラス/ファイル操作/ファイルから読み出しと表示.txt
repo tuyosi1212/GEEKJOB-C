@@ -1,0 +1,31 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.camp.servlet;
+
+/**
+ *
+ * @author tuyom
+ */
+
+import java.io.*;
+
+public class file1 {
+    public static void main(String[] args){
+        try{
+        File fl = new File("C:\\Users\\tuyom\\OneDrive\\text.txt");
+                FileWriter fw = new FileWriter(fl);
+                fw.write("私は中島強です。");
+                fw.write("出身は熊本です。");
+                 fw.close();
+                FileReader fr =new FileReader(fl);
+                BufferedReader br = new BufferedReader(fr);
+                System.out.print(br.readLine());
+                fr.close();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+}
