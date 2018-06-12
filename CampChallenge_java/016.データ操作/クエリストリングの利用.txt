@@ -1,0 +1,127 @@
+          サーブレット
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.camp.servlet;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+/**
+ *
+ * @author tuyom
+ */
+public class qs1 extends HttpServlet {
+
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+          request.setCharacterEncoding("UTF-8");
+          int price1 = 100;
+          int price2 = 200;
+          int price3 = 300;
+          if(request.getParameter("type").equals("1")){
+              out.print("雑貨 " + price1  +"円"+"<br>"); 
+          }else if(request.getParameter("type").equals("2")){
+              out.print("生鮮食品 " + price2 +"円" +"<br>");
+          }else if(request.getParameter("type").equals("3")){
+              out.print("その他 " + price3 +"円" + "<br>");
+          }
+          String p = request.getParameter("total");
+          int i = Integer.parseInt(p);
+          if(i >= 5000){
+               double point = i * 0.05;
+               out.print("ポイント" + point + "<br>");
+               out.print(i + "円");
+          }else if(i >= 3000){
+              double point = i * 0.04;
+              out.print("ポイント" + point + "<br>");
+               out.print(i + "円");
+          }else{
+              int point = 0;
+               out.print(i + "円");
+          }
+          
+        }
+    }
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
+
+}
+
+
+　　　　　　html
+
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+       <form action ="qs1" method ="post">
+           <input type ="number" name="total" value="0" size="10">
+           <input type="number" name="count" value="0" size="10"> 
+           <input type="number" name="type" value="0" size="1">  
+           <input type="submit" name="submit" value="submit">
+       </form>
+    </body>
+</html>
