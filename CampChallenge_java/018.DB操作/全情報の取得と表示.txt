@@ -1,0 +1,53 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.camp.servlet;
+
+/**
+ *
+ * @author tuyom
+ */
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.*;
+
+public class data1 {
+ public static void main(String[] args){
+        Connection con = null; 
+        try{
+             Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+             con = DriverManager.getConnection("jdbc:mysql://localhost:3306/challenge_db?characterEncoding=UTF-8&serverTimezone=JST","root",""); 
+             String str = "insert into profiles (profileID,name,tel,age,birthday) value (?,?,?,?,?)";
+             PreparedStatement ps;
+             ps = con.prepareStatement(str);
+             ps.setInt(1, 6);
+             ps.setString(2, "íÜìá");
+             ps.setString(3, "090-0000-9999");
+             ps.setInt(4, 23);
+             ps.setString(5, "1995-12-31");
+             ps.executeUpdate();
+             String result = "select profileID,name,tel,age,birthday from profiles";
+             ResultSet rs = ps.executeQuery(result);
+            while(rs.next()){
+                System.out.println(rs.getInt("profileID") + rs.getString("name")+ rs.getString("tel") + rs.getInt("age") + rs.getString("birthday"));
+            }
+        }catch(SQLException e){
+             System.out.println("ÉGÉâÅ[î≠ê∂");
+             System.out.println(e.getMessage());
+        }catch(Exception e){
+             System.out.println(e);
+    }finally{
+            try{
+                con.close();
+            }catch(Exception e){
+                System.out.print(e.getMessage());
+            }
+        
+    }
+    }
+}
+ 

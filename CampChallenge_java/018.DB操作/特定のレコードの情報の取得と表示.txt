@@ -1,0 +1,54 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.camp.servlet;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.*;
+
+/**
+ *
+ * @author tuyom
+ */
+public class data2 {
+     public static void main(String[] args){
+       Connection con = null; 
+        try{
+             Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+             con = DriverManager.getConnection("jdbc:mysql://localhost:3306/challenge_db?characterEncoding=UTF-8&serverTimezone=JST","root",""); 
+             PreparedStatement ps;
+             String str = "select * from profiles ";
+             ps = con.prepareStatement(str);
+             ps.executeQuery();
+             String result = "select profileID,name,tel,age,birthday from profiles where profileID = 1";
+             ResultSet rs = ps.executeQuery(result);
+             rs.next();
+             int pID = rs.getInt("profileID");
+             String name = rs.getString("name");
+             String tel = rs.getString("tel");
+             int age = rs.getInt("age");
+             String birthday = rs.getString("birthday");
+             System.out.println(pID + name + tel + age + birthday);
+        }catch(SQLException e){
+             System.out.println("ÉGÉâÅ[î≠ê∂");
+             System.out.println(e.getMessage());
+        }catch(Exception e){
+             System.out.println(e);
+    }finally{
+            try{
+                con.close();
+            }catch(Exception e){
+                System.out.print(e.getMessage());
+            }
+        
+    }
+    }
+}
+    
+
