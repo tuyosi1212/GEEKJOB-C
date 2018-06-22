@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <form action="data8.jsp" method="post">
+            profileID<input type="text" name="profileID" size="2" value="">
+            name<input type="text" name="name" size="10" value="">
+            tel<input type="text" name="tel" size="20" value="">
+            age<input type="text" name="age" size="2" value="">
+            birthday<input type="text" name="birthday" size="10" value="">
+            <input type="submit" name="submit" value="submit">
+        </form>
+    </body>
+</html>
+
+
+JSP
+
+<%-- 
+    Document   : data8
+    Created on : 2018/06/22, 16:44:51
+    Author     : tuyom
+--%>
+
+<%@page import="java.sql.Date"%>
+<%@page import="java.sql.ResultSet"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.DriverManager"%>
+<%@page import="java.sql.Connection"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+    </head>
+    <body>
+        <%
+            Connection con = null;
+            try{
+                request.setCharacterEncoding("UTF-8");
+                 int profileID = Integer.parseInt(request.getParameter("profileID"));
+                 String name = request.getParameter("name");
+                 String tel = request.getParameter("tel");
+                 int age = Integer.parseInt(request.getParameter("age"));
+                 Date birthday = Date.valueOf(request.getParameter("birthday"));
+                 Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+                 con = DriverManager.getConnection("jdbc:mysql://localhost:3306/challenge_db?characterEncoding=UTF-8&serverTimezone=JST","root","");
+                 PreparedStatement ps = con.prepareStatement("update profiles set name = ?,tel = ?,age = ?,birthday = ? where profileID = ?");
+                 ps.setString(1,name);
+                 ps.setString(2, tel);
+                 ps.setInt(3,age);
+                 ps.setDate(4,birthday);
+                 ps.setInt(5, profileID);
+                 ps.executeUpdate();
+                 ResultSet rs = ps.executeQuery("select * from profiles");
+                 while(rs.next()){
+                  out.print(rs.getInt("profileID") + rs.getString("name") + rs.getString("tel") + rs.getInt("age") + rs.getString("birthday") + "<br>");
+                 }
+            }catch(Exception e){
+                out.print(e.getMessage());
+            }finally{
+                try{
+                con.close();
+                }catch(Exception e){
+                 out.print(e.getMessage());
+                }
+            }
+            %>
+    </body>
+</html>
+

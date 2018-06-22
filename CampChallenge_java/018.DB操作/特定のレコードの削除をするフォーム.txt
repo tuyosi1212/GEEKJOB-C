@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <form action="data72.jsp" method="post">
+           profileID <input type="text" name="profileID" size="2" value="">
+            <input type="submit" name="submit" value="submit">
+        </form>
+    </body>
+</html>
+
+               
+                  JSP
+
+<%-- 
+    Document   : data72
+    Created on : 2018/06/22, 16:08:46
+    Author     : tuyom
+--%>
+
+
+<%@page import="java.sql.ResultSet"%>
+<%@page import="java.sql.PreparedStatement"%>
+<%@page import="java.sql.DriverManager"%>
+<%@page import="java.sql.Connection"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+    </head>
+    <body>
+      <%
+            Connection con = null;
+        try{ 
+       request.setCharacterEncoding("UTF-8");
+       int profileID = Integer.parseInt(request.getParameter("profileID"));
+       Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+       con = DriverManager.getConnection("jdbc:mysql://localhost:3306/challenge_db?characterEncoding=UTF-8&serverTimezone=JST","root","");
+       PreparedStatement ps = con.prepareStatement("delete from profiles where profileID = ?");
+       ps.setInt(1, profileID);
+       ps.executeUpdate();
+       ResultSet rs = ps.executeQuery("select * from profiles");
+       while(rs.next()){
+            out.print(rs.getInt("profileID") + rs.getString("name") + rs.getString("tel") + rs.getInt("age") + rs.getString("birthday") + "<br>");
+            }
+       }catch(Exception e){
+          out.print(e.getMessage());
+           }finally{
+              try{
+                con.close();
+              }catch(Exception e){
+                out.print(e.getMessage());
+                }
+            }
+            %>
+    </body>
+</html>
+
