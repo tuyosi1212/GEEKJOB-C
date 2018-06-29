@@ -1,0 +1,222 @@
+  
+            Loginページ
+ public void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+         out.print("<html>");
+         out.print("<head>");
+         out.print("<title>ログインページ</title>");
+         out.print("</head>");
+         out.print("<body>");
+         
+         out.print("<h1>ログイン画面</h1>");
+         
+         HttpSession session = request.getSession(true);
+         
+         Object status = session.getAttribute("status");
+         
+         if(status != null){
+             out.println("<p>認証失敗しました。</p>");
+             out.println("<p>再度入力してください。</p>");
+             session.setAttribute("status", null);
+         }
+         
+         out.println("<form method=\"POST\" action=\"/java-charenge-13/LoginCheck\" name=\"loginform\">");
+         out.println("<table>");
+         out.println("<tr>");
+         out.println("<td>ユーザー名</td>");
+         out.println("<td><input type=\"text\" name=\"user\" size=\"32\"></td>");
+         out.println("</tr>");
+         out.println("<tr>");
+         out.println("<td>パスワード</td>");
+         out.println("<td><input type=\"password\" name=\"pass\" size=\"32\"></td>");
+         out.println("</tr>");
+         out.println("<tr>");
+         out.println("<td><input type=\"submit\" value=\"Login\"></td>");
+         out.println("</tr>");
+         out.println("</table>");
+         out.println("</form>");
+         
+      
+         out.println("</html>");
+             
+         }  
+    }
+                   LoginCheckページ
+  public void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+            request.setCharacterEncoding("UTF-8");
+            String user = request.getParameter("user");
+            String pass = request.getParameter("pass");
+            HttpSession session = request.getSession(true);
+             Connection con = null;
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+             con = DriverManager.getConnection("jdbc:mysql://localhost:3306/challenge_db?characterEncoding=UTF-8&serverTimezone=JST","root",""); 
+             PreparedStatement ps = con.prepareStatement("select * from c_user");
+             ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                if(user.equals(rs.getString("name")) && pass.equals(rs.getString("pass"))){
+                    session.setAttribute("login","ok");
+                    String userID = String.valueOf(rs.getInt("userID"));
+                    session.setAttribute("userID",userID);
+                    response.sendRedirect("/java-charenge-13/Page");
+                }
+            } 
+             session.setAttribute("login","error");
+             response.sendRedirect("/java-charenge-13/Login");
+        }catch(Exception e){
+            out.print("エラー" + e.getMessage());
+        }finally{
+            try{
+                con.close();
+            }catch(Exception e){
+                out.print(e.getMessage());
+            }
+        }
+    }
+    
+    }
+                   Logoutページ
+   protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+          HttpSession session =request.getSession(true);
+         session.invalidate();
+         response.sendRedirect("/java-charenge-13/Login");
+        }
+    }
+　　　　　　　　　各ページへ飛ばす　　　　　　　
+ protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        try (PrintWriter out = response.getWriter()) {
+         out.print("<html>");
+         out.print("<head>");
+         out.print("<title>ユーザーページ</title>");
+         out.print("</head>");
+         out.print("<body>");
+         
+         out.print("<h1></h1>");
+         
+         HttpSession session = request.getSession(true);
+         out.println("<form method=\"POST\" action=\"/java-charenge-13/PM.jsp\" name=\"user\">" );
+         out.println("<table>");
+         out.println("<tr>");
+         out.println("<td><p>商品一覧</p></td>");
+         out.println("<td><input type=\"submit\" value=\"一覧\"></td>");
+         out.println("</tr>");
+         out.println("</table>");
+         out.println("</form>");
+         
+         
+         
+         out.println("<form method=\"POST\" action=\"/java-charenge-13/PA.jsp\" name=\"user\">" );
+         out.println("<table>");
+         out.println("<tr>");
+         out.println("<td><p>商品登録</p></td>");
+         out.println("<td><input type=\"submit\" value=\"登録\"></td>");
+         out.println("</tr>");
+         out.println("</table>");
+         out.println("</form>");
+         
+         
+         out.println("<form method=\"POST\" action=\"Logout\" name=\"user\">" );
+         out.println("<tr>");
+         out.println("<td><input type=\"submit\" value=\"Logout\"></td>");
+         out.println("</tr>");
+         out.println("</table>");
+         out.println("</form>");
+         
+         out.println("</body>"); 
+         out.println("<html>");
+         
+        }
+    }
+　　　　　　　　商品登録ページ
+ <form method="post" action="/java-charenge-13/PA2.jsp">
+              <table>
+                  <tr>
+                      <td>商品ID</td>
+                      <td> <input type="text" size="2" name="itemID" value=""></td>
+                  </tr>
+                  <tr>
+                      <td>商品名</td>
+                      <td><input type="text" size="32" name="itemName" value=""></td> 
+                  </tr>
+              </table>
+             <input type="submit" value="登録">
+         
+        </form>
+　　　　　　　　　　　　商品登録ページ２
+ <body>
+             <%
+            request.setCharacterEncoding("UTF-8");
+            int itemID = Integer.valueOf(request.getParameter("itemID"));
+            String itemName = request.getParameter("itemName");
+            String ID =  (String)session.getAttribute("userID");
+            int userID = Integer.parseInt(ID);
+            Connection con = null;
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+             con = DriverManager.getConnection("jdbc:mysql://localhost:3306/challenge_db?characterEncoding=UTF-8&serverTimezone=JST","root",""); 
+             PreparedStatement ps = con.prepareStatement("update c_user set itemID = ? where userID = ?");
+             ps.setInt(1,itemID);
+             ps.setInt(2, userID);
+             ps.executeUpdate();
+             ps = con.prepareStatement("select * from c_user where userID = ?");
+             ps.setInt(1, userID);
+             ResultSet rs = ps.executeQuery();
+             while(rs.next()){
+                 if(rs.getInt("userID") == userID ){ 
+                   out.print("ユーザーID " +  rs.getInt("userID") + "<br>");
+                   out.print("名前 " + rs.getString("name") + "<br>");
+                   out.print("商品ID " + rs.getInt("itemID"));
+                   break;
+             }
+             }
+        }catch(Exception e){
+            out.print(e.getMessage());
+        }finally{
+            try{
+                con.close();
+            }catch(Exception e){
+                out.print(e.getMessage());
+            }
+        }
+              %>
+
+　　　　　　　　　　　　　　商品情報ページ
+<body>
+        <%
+            Connection con = null;
+            try{
+                 Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
+                 con = DriverManager.getConnection("jdbc:mysql://localhost:3306/challenge_db?characterEncoding=UTF-8&serverTimezone=JST","root","");
+                 PreparedStatement ps = con.prepareStatement("select * from c_item");
+                 ResultSet rs = ps.executeQuery(); 
+                 while(rs.next()){
+                     out.print(rs.getInt("itemID") + rs.getString("itemName") + " ");
+                     out.print("<br>");
+                 }
+                 }catch(Exception e){
+                         out.print(e.getMessage());
+                }finally{
+                    try{
+                        con.close();
+                        
+                    }catch(Exception e){
+                        out.print(e.getMessage());
+                    }
+               
+            }
+            
+            %>
+        <form method="Post" action="/java-charenge-13/Page">
+            <input type="submit" value="back">
+        </form>
+
