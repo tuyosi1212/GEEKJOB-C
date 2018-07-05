@@ -1,0 +1,296 @@
+             insert.jsp
+<%@page import="javax.servlet.http.HttpSession" %>
+<%@page import="jums.JumsHelper" %>
+<%@page import="jums.UserDataBeans"%>
+<%
+    HttpSession hs = request.getSession();
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMS登録画面</title>
+    </head>
+    <body>
+        <%   
+             UserDataBeans  udb = (UserDataBeans)session.getAttribute("udb");
+            if(udb == null){
+                udb = new UserDataBeans();
+            }
+            
+        %>
+        
+    <form action="insertconfirm" method="POST">
+        名前:
+        <input type="text" name="name" value="<%= udb.getName()%>" required>
+        <br><br>
+
+        生年月日:
+        <select name="year" required>
+            <option value="<%= udb.getYear()%>">----</option>
+            <%
+            for(int i=1950; i<=2010; i++){ %>
+            <option value="<%=i%>"> <%=i%> </option>
+            <% } %>
+        </select>年
+        <select name="month" required>
+            <option value="<%= udb.getMonth()%>">--</option>
+            <%
+            for(int i = 1; i<=12; i++){ %>
+            <option value="<%=i%>"><%=i%></option>
+            <% } %>
+        </select>月
+        <select name="day" required>
+            <option value="<%= udb.getDay()%>">--</option>
+            <%
+            for(int i = 1; i<=31; i++){ %>
+            <option value="<%=i%>"><%=i%></option>
+            <% } %>
+        </select>日
+        <br><br>
+
+        種別:
+        <br>
+        <input type="radio" name="type" value="1" checked required>エンジニア<br>
+        <input type="radio" name="type" value="2" required>営業<br>
+        <input type="radio" name="type" value="3" required>その他<br>
+        <br>
+
+        電話番号:
+        <input type="text" name="tell" value="<%= udb.getTell()%>" required>
+        <br><br>
+
+        自己紹介文
+        <br>
+        <textarea name="comment" rows=10 cols=50 style="resize:none" wrap="hard" required><%= udb.getComment()%></textarea><br><br>
+
+        <input type="hidden" name="ac"  value="<%= hs.getAttribute("ac")%>">
+        <input type="submit" name="btnSubmit" value="確認画面へ">
+    </form>
+        <br>
+        <%=JumsHelper.getInstance().home()%>
+        
+    </body>
+</html>
+
+                           insertconfirm.jsp
+<%@page import="jums.JumsHelper"%>
+<%@page import="javax.servlet.http.HttpSession" %>
+<%@page import="jums.UserDataBeans"%>
+<%
+    HttpSession hs = request.getSession();
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMS登録確認画面</title>
+    </head>
+    <body>
+    <% 
+        UserDataBeans udb = (UserDataBeans)session.getAttribute("udb");
+    if(!udb.getName().equals("")){ %>
+        <h1>登録確認</h1>
+        名前:<%= udb.getName()%><br>
+        生年月日:<%= udb.getYear()+"年"+ udb.getMonth() +"月" + udb.getDay()+"日"%><br>
+        種別:<%= udb.getType()%><br>
+        電話番号:<%= udb.getTell()%><br>
+        自己紹介:<%= udb.getComment()%><br>
+        上記の内容で登録します。よろしいですか？
+        <form action="insertresult" method="POST">
+            <input type="hidden" name="ac" value="<%= hs.getAttribute("ac")%>">
+            <input type="submit" name="yes" value="はい">
+        </form>
+    <% }else{ %>
+        <h1>入力が不完全です</h1>
+    <% } %>
+        <form action="insert" method="POST">
+            <input type="submit" name="no" value="登録画面に戻る">
+        </form>
+        <br>
+         <%=JumsHelper.getInstance().home()%>
+    </body>
+</html>
+
+                  insertresult.jsp
+<%@page import="jums.JumsHelper"%>
+<%@page import="javax.servlet.http.HttpSession" %>
+<%@page import="jums.UserDataBeans"%>
+<%
+    HttpSession hs = request.getSession();
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMS登録結果画面</title>
+    </head>
+    <body>
+        <%
+           UserDataBeans udb = (UserDataBeans)session.getAttribute("udb");
+         %>
+        <h1>登録結果</h1><br>
+        名前:<%= udb.getName()%><br>
+        生年月日:<%= udb.getYear() +"年"+ udb.getMonth() +"月"+udb.getDay()+"日"%><br>
+        種別:<%= udb.getType()%><br>
+        電話番号:<%= udb.getTell()%><br>
+        自己紹介:<%= udb.getComment()%><br>
+        以上の内容で登録しました。<br>
+          <%=  hs.invalidate()%>
+          <%=JumsHelper.getInstance().home()%>
+    </body>
+</html>
+
+
+                      insert.java
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        session.setAttribute("ac", (int) (Math.random() * 1000));
+        request.getRequestDispatcher("/insert.jsp").forward(request, response);   
+    }
+
+
+
+                      insertconfirm.java
+ protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try{
+            HttpSession session = request.getSession();
+            request.setCharacterEncoding("UTF-8");//セッションに格納する文字コードをUTF-8に変更
+            String accesschk = request.getParameter("ac");
+            if(accesschk ==null || (Integer)session.getAttribute("ac")!=Integer.parseInt(accesschk)){
+                throw new Exception("不正なアクセスです");
+            }
+            
+            //フォームからの入力を取得
+            String name = request.getParameter("name");
+            String year = request.getParameter("year");
+            String month = request.getParameter("month");
+            String day = request.getParameter("day");
+            String type = request.getParameter("type");
+            String tell = request.getParameter("tell");
+            String comment = request.getParameter("comment");
+
+           //java beans　に値を格納
+            UserDataBeans udb = new UserDataBeans();
+            udb.setName(name);
+            udb.setYear(year);
+            udb.setMonth(month);
+            udb.setDay(day);
+            udb.setTell(tell);
+            udb.setType(type);
+            udb.setComment(comment);
+            session.setAttribute("udb", udb);
+            request.getRequestDispatcher("/insertconfirm.jsp").forward(request, response);
+        }catch(Exception e){
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/error.jsp").forward(request, response);
+        }
+            
+    }
+
+
+                  insertresult.java
+ protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        //セッションスタート
+        HttpSession session = request.getSession();
+        
+        
+        try{
+               String accesschk = request.getParameter("ac");
+            if(accesschk ==null || (Integer)session.getAttribute("ac")!=Integer.parseInt(accesschk)){
+                throw new Exception("不正なアクセスです");
+            }
+            //ユーザー情報に対応したJavaBeansオブジェクトに格納していく
+            UserDataDTO userdata = new UserDataDTO();
+            UserDataBeans udb = (UserDataBeans)session.getAttribute("udb");
+            userdata.setName(udb.getName());
+            Calendar birthday = Calendar.getInstance();
+            birthday.set(Integer.parseInt(udb.getYear()),Integer.parseInt(udb.getMonth())-1,Integer.parseInt(udb.getDay()));
+            userdata.setBirthday(birthday.getTime());
+            userdata.setType(Integer.parseInt(udb.getType()));
+            userdata.setTell(udb.getTell());
+            userdata.setComment(udb.getComment());
+            
+            //DBへデータの挿入
+            UserDataDAO.getInstance().insert(userdata);
+            
+            request.getRequestDispatcher("/insertresult.jsp").forward(request, response);
+        }catch(Exception e){
+            //データ挿入に失敗したらエラーページにエラー文を渡して表示
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/error.jsp").forward(request, response);
+        }
+    }
+
+
+                      UserDataBeans
+public class UserDataBeans implements Serializable {
+    private String name = "";
+    private String year ="";
+    private String month ="";
+    private String day ="";
+    private String type = "";
+    private String tell = "";
+    private String comment = "";
+    
+    public UserDataBeans(){}
+    
+    public void setName(String n){this.name = n;}
+    public String getName(){return this.name;}
+    
+    public void setYear(String y){this.year = y;}
+    public String getYear(){return this.year;}
+    
+    public void setMonth (String m){this.month = m;}
+    public String getMonth(){return this.month;}
+    
+    public void setDay(String d){this.day = d;}
+    public String getDay(){return this.day;}
+    
+    public void setType(String t){this.type = t;}
+    public String getType(){return this.type;}
+    
+    public void setTell(String tel){this.tell = tel;}
+    public String getTell(){return this.tell;}
+    
+    public void setComment(String com){this.comment = com;}
+    public String getComment(){return this.comment;}
+    
+}
+
+
+                UserDataDAO
+  public void insert(UserDataDTO ud) throws SQLException{
+        Connection con = null;
+        PreparedStatement st = null;
+        try{
+            con = DBManager.getConnection();
+            st =  con.prepareStatement("INSERT INTO user_t(name,birthday,tell,type,comment,newDate) VALUES(?,?,?,?,?,?)");
+            st.setString(1, ud.getName());
+            st.setDate(2, new java.sql.Date(ud.getBirthday().getTime()));//指定のタイムスタンプ値からSQL格納用のDATE型に変更
+            st.setString(3, ud.getTell());
+            st.setInt(4, ud.getType());
+            st.setString(5, ud.getComment());
+            st.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
+            st.executeUpdate();
+            System.out.println("insert completed");
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+            throw new SQLException(e);
+        }finally{
+            if(con != null){
+                con.close();
+            }
+        }
+
+    
+
+
+
