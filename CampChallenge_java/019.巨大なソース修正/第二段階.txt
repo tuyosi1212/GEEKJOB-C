@@ -1,0 +1,957 @@
+            
+           index.jsp
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>JUMSトップ</title>
+</head>
+<body>
+    <h1>ユーザー情報管理トップ</h1><br>
+    <h3>ここでは、ユーザー情報管理システムとしてユーザー情報の登録や検索、
+        付随して修正や削除を行うことができます</h3><br>
+    <a href="insert">新規登録</a><br>
+    <a href="Search" >検索(修正・削除)</a><br>
+</body>
+</html>
+
+               error.jsp
+<%@page import="jums.JumsHelper" %>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>error</title>
+    </head>
+    <body>
+        エラーが発生しました。以下の項目を確認してください。<br>
+        <%=request.getAttribute("error")%><br><br>
+        <%=JumsHelper.getInstance().home()%>
+    </body>
+</html>
+
+              insert.java
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        session.setAttribute("ac", (int) (Math.random() * 1000));
+        request.getRequestDispatcher("/insert.jsp").forward(request, response);   
+    }
+
+             insert.jsp
+<%@page import="javax.servlet.http.HttpSession"
+        import="jums.JumsHelper"
+        import="jums.UserDataBeans" %>
+<%
+    JumsHelper jh = JumsHelper.getInstance();
+    HttpSession hs = request.getSession();
+    UserDataBeans udb = null;
+    boolean reinput = false;
+    if(request.getParameter("mode") != null && request.getParameter("mode").equals("REINPUT")){
+        reinput = true;
+        udb = (UserDataBeans)hs.getAttribute("udb");
+    }
+
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMS登録画面</title>
+    </head>
+    <body>
+    <form action="insertconfirm" method="POST">
+        名前:
+        <input type="text" name="name" value="<% if(reinput){out.print(udb.getName());}%>">
+        <br><br>
+
+        生年月日:
+        <select name="year">
+            <option value="">----</option>
+            <% for(int i=1950; i<=2010; i++){ %>
+            <option value="<%=i%>" <% if(reinput && udb.getYear() == i){out.print("selected = \"selected\"");}%>><%=i%></option>
+            <% } %>
+        </select>年
+        <select name="month">
+            <option value="">--</option>
+            <% for(int i = 1; i<=12; i++){ %>
+            <option value="<%=i%>" <% if(reinput && udb.getMonth() == i){out.print("selected = \"selected\"");}%>><%=i%></option>
+            <% } %>
+        </select>月
+        <select name="day">
+            <option value="">--</option>
+            <% for(int i = 1; i<=31; i++){ %>
+            <option value="<%=i%>"<% if(reinput && udb.getDay() == i){out.print("selected = \"selected\"");}%>><%=i%></option>
+            <% } %>
+        </select>日
+        <br><br>
+
+        種別:
+        <br>
+            <% for(int i = 1; i<=3; i++){ %>
+            <input type="radio" name="type" value="<%=i%>"<%if(reinput && udb.getType() == i){out.print("checked = \"checked\"");}%>><%=jh.exTypenum(i)%><br>
+            <% } %>
+        <br>
+
+        電話番号:
+        <input type="text" name="tell" value="<% if(reinput){out.print(udb.getTell());}%>">
+        <br><br>
+
+        自己紹介文
+        <br>
+        <textarea name="comment" rows=10 cols=50 style="resize:none" wrap="hard"><% if(reinput){out.print(udb.getComment());}%></textarea><br><br>
+
+        <input type="hidden" name="ac"  value="<%= hs.getAttribute("ac")%>">
+        <input type="submit" name="btnSubmit" value="確認画面へ">
+    </form>
+        <br>
+        <%=jh.home()%>
+    </body>
+</html>
+
+
+                          insertconfirm.java
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        //セッションスタート
+        HttpSession session = request.getSession();
+        
+        try{
+            request.setCharacterEncoding("UTF-8");//リクエストパラメータの文字コードをUTF-8に変更
+            
+            //アクセスルートチェック
+            String accesschk = request.getParameter("ac");
+            if(accesschk ==null || (Integer)session.getAttribute("ac")!=Integer.parseInt(accesschk)){
+                throw new Exception("不正なアクセスです");
+            }
+            
+            //フォームからの入力を取得して、JavaBeansに格納
+            UserDataBeans udb = new UserDataBeans();
+            udb.setName(request.getParameter("name"));
+            udb.setYear(request.getParameter("year"));
+            udb.setMonth(request.getParameter("month"));
+            udb.setDay(request.getParameter("day"));
+            udb.setType(request.getParameter("type"));
+            udb.setTell(request.getParameter("tell"));
+            udb.setComment(request.getParameter("comment"));
+
+            //ユーザー情報群をセッションに格納
+            session.setAttribute("udb", udb);
+            System.out.println("Session updated!!");
+            
+            request.getRequestDispatcher("/insertconfirm.jsp").forward(request, response);
+        }catch(Exception e){
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/error.jsp").forward(request, response);
+        }
+            
+
+                      insertconfirm.jsp
+
+<%@page import="java.util.ArrayList"
+        import="javax.servlet.http.HttpSession"
+        import="jums.JumsHelper"
+        import="jums.UserDataBeans" %>
+<%
+    JumsHelper jh = JumsHelper.getInstance();
+    HttpSession hs = request.getSession();
+    UserDataBeans udb = (UserDataBeans)hs.getAttribute("udb");
+    ArrayList<String> chkList = udb.chkproperties();
+    
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMS登録確認画面</title>
+    </head>
+    <body>
+    <% if(chkList.size()==0){ %>
+        <h1>登録確認</h1>
+        名前:<%= udb.getName()%><br>
+        生年月日:<%= udb.getYear()+"年"+udb.getMonth()+"月"+udb.getDay()+"日"%><br>
+        種別:<%= jh.exTypenum(udb.getType())%><br>
+        電話番号:<%= udb.getTell()%><br>
+        自己紹介:<%= udb.getComment()%><br>
+        上記の内容で登録します。よろしいですか？
+        <form action="insertresult" method="POST">
+            <input type="hidden" name="ac"  value="<%= hs.getAttribute("ac")%>">
+            <input type="submit" name="yes" value="はい">
+        </form>
+    <% }else{ %>
+        <h1>入力が不完全です</h1>
+        <%=jh.chkinput(chkList) %>
+    <% } %>
+        <form action="insert" method="POST">
+            <input type="submit" name="no" value="登録画面に戻る">
+            <input type="hidden" name="mode" value="REINPUT">
+        </form>
+        <%=jh.home()%>
+    </body>
+</html>
+
+
+                             insertresult.java
+protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        //セッションスタート
+        HttpSession session = request.getSession();
+        
+        try{
+            request.setCharacterEncoding("UTF-8");//リクエストパラメータの文字コードをUTF-8に変更
+            
+            //アクセスルートチェック
+            String accesschk = request.getParameter("ac");
+            if(accesschk ==null || (Integer)session.getAttribute("ac")!=Integer.parseInt(accesschk)){
+                throw new Exception("不正なアクセスです");
+            }
+            
+            UserDataBeans udb = (UserDataBeans)session.getAttribute("udb");
+            
+            //DTOオブジェクトにマッピング。DB専用のパラメータに変換
+            UserDataDTO userdata = new UserDataDTO();
+            udb.UD2DTOMapping(userdata);
+            
+            //DBへデータの挿入
+            UserDataDAO .getInstance().insert(userdata);
+            
+            //成功したのでセッションの値を削除
+            session.invalidate();
+            
+            //結果画面での表示用に入力パラメータ―をリクエストパラメータとして保持
+            request.setAttribute("udb", udb);
+            
+            request.getRequestDispatcher("/insertresult.jsp").forward(request, response);
+        }catch(Exception e){
+            //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/error.jsp").forward(request, response);
+        }
+    }
+
+                               insertresult.jsp
+<%@page import="javax.servlet.http.HttpSession"
+        import="jums.JumsHelper"
+        import="jums.UserDataBeans" %>
+<%
+    JumsHelper jh = JumsHelper.getInstance();
+    UserDataBeans udb = (UserDataBeans)request.getAttribute("udb");
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMS登録結果画面</title>
+    </head>
+    <body>
+        <h1>登録結果</h1><br>
+        名前:<%= udb.getName()%><br>
+        生年月日:<%= udb.getYear()+"年"+udb.getMonth()+"月"+udb.getDay()+"日"%><br>
+        種別:<%= jh.exTypenum(udb.getType())%><br>
+        電話番号:<%= udb.getTell()%><br>
+        自己紹介:<%= udb.getComment()%><br>
+        以上の内容で登録しました。<br>
+    </body>
+    <%=jh.home()%>
+</html>
+
+                        search.java
+
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+          HttpSession session = request.getSession();
+        session.setAttribute("ac", (int) (Math.random() * 1000));
+        request.getRequestDispatcher("/search.jsp").forward(request, response);  
+    }
+
+                        search.jsp
+<%@page  import="jums.JumsHelper" %>
+<%
+    HttpSession hs =request.getSession();
+    JumsHelper jh = JumsHelper.getInstance();
+%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMSユーザー情報検索画面</title>
+    </head>
+    <body>
+         <form action="SearchResult" method="POST">
+        名前:
+        <input type="text" name="name" required>
+        <br><br>
+
+        生年:　
+        <select name="year" required>
+            <option value="">----</option>
+            <% for(int i=1950; i<=2010; i++){ %>
+            <option value="<%=i%>"><%=i%></option>
+            <% } %>
+        </select>年生まれ
+        <br><br>
+
+        種別:
+        <br>
+            <% for(int i = 1; i<=3; i++){ %>
+            <input type="radio" name="type" value="<%=i%>" required><%=jh.exTypenum(i)%><br>
+            <% } %>
+        <br>
+        <input type="hidden" name="ac" value="<%= hs.getAttribute("ac")%>">
+        <input type="submit" name="btnSubmit" value="検索">
+    </form>
+        <br>
+        <%=jh.home()%>
+    </body>
+</html>
+
+
+                            searchresult.java
+ protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try{
+            request.setCharacterEncoding("UTF-8");//リクエストパラメータの文字コードをUTF-8に変更
+             HttpSession session = request.getSession();
+            String accesschk = request.getParameter("ac");
+            if(accesschk ==null || (Integer)session.getAttribute("ac")!=Integer.parseInt(accesschk)){
+                throw new Exception("不正なアクセスです");
+            }
+        
+            //フォームからの入力を取得して、JavaBeansに格納
+            UserDataBeans udb = new UserDataBeans();
+            udb.setName(request.getParameter("name"));
+            udb.setYear(request.getParameter("year"));
+            udb.setType(request.getParameter("type"));
+
+            //DTOオブジェクトにマッピング。DB専用のパラメータに変換
+            UserDataDTO searchData = new UserDataDTO();
+            udb.UD2DTOMapping(searchData);
+
+            UserDataDTO resultData = UserDataDAO .getInstance().search(searchData);
+            request.setAttribute("resultData", resultData);
+            
+            request.getRequestDispatcher("/searchresult.jsp").forward(request, response);  
+        }catch(Exception e){
+            //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/error.jsp").forward(request, response);
+        }
+        
+        
+    }
+
+                                  searchresult.jsp
+<%@page import="jums.JumsHelper"
+        import="jums.UserDataDTO" %>
+<%
+    JumsHelper jh = JumsHelper.getInstance();
+    UserDataDTO udd = (UserDataDTO)request.getAttribute("resultData");
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMS検索結果画面</title>
+    </head>
+    <body>
+        <h1>検索結果</h1>
+        <table border=1>
+            <tr>
+                <th>名前</th>
+                <th>生年</th>
+                <th>種別</th>
+                <th>登録日時</th>
+            </tr>
+            <tr>
+                <td><a href="ResultDetail?id=<%= udd.getUserID()%>"><%= udd.getName()%></a></td>
+                <td><%= udd.getBirthday()%></td>
+                <td><%= udd.getType()%></td>
+                <td><%= udd.getNewDate()%></td>
+            </tr>
+        </table>
+    </body>
+    <%=jh.home()%>
+</html>
+                      
+                                          resultdetail.java
+ protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try{
+            request.setCharacterEncoding("UTF-8");//リクエストパラメータの文字コードをUTF-8に変更
+            HttpSession session = request.getSession();
+            int userID = Integer.parseInt(request.getParameter("id"));         //<a>タグからID取得
+            session.setAttribute("userID",userID);
+            //DTOオブジェクトにマッピング。DB専用のパラメータに変換
+            UserDataDTO searchData = new UserDataDTO();
+            searchData.setUserID(userID);                                     //取得したユーザーIDをセット
+
+            
+            UserDataDTO resultData = UserDataDAO .getInstance().searchByID(searchData);
+            request.setAttribute("resultData", resultData);
+            
+            request.getRequestDispatcher("/resultdetail.jsp").forward(request, response);  
+        }catch(Exception e){
+            //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/error.jsp").forward(request, response);
+        }        
+    }
+
+                                             resultdetail.jsp
+<%@page import="jums.JumsHelper"
+        import="jums.UserDataDTO"
+        import="javax.servlet.http.HttpSession"
+        %>
+<%
+    JumsHelper jh = JumsHelper.getInstance();
+    UserDataDTO udd = (UserDataDTO)request.getAttribute("resultData");
+    HttpSession hs = request.getSession();
+    hs.setAttribute("udd", udd);
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMSユーザー情報詳細画面</title>
+    </head>
+    <body>
+        <h1>詳細情報</h1>
+        名前:<%= udd.getName()%><br>
+        生年月日:<%= udd.getBirthday()%><br>
+        種別:<%= udd.getType()%><br>
+        電話番号:<%= udd.getTell()%><br>
+        自己紹介:<%= udd.getComment()%><br>
+        登録日時:<%= udd.getNewDate()%><br>
+        <form action="Update" method="POST">
+        <input type="submit" name="update" value="変更" style="width:100px">
+        </form>
+        <form action="Delete" method="POST">
+        <input type="submit" name="delete" value="削除" style="width:100px">
+        </form>
+    </body>
+</html>
+
+                                     update.java
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        try {
+              request.setCharacterEncoding("UTF-8");//リクエストパラメータの文字コードをUTF-8に変更
+              HttpSession session = request.getSession();
+              session.setAttribute("ac", (int) (Math.random() * 1000));
+              request.getRequestDispatcher("/update.jsp").forward(request, response);
+        } finally {
+            out.close();
+        }
+    }
+                                   update.jsp
+<%@page import="jums.JumsHelper" 
+        import="javax.servlet.http.HttpSession"%>
+<%
+    JumsHelper jh = JumsHelper.getInstance();
+    HttpSession hs = request.getSession();
+   
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMS変更画面</title>
+    </head>
+    <body>
+    <form action="UpdateResult" method="POST">
+        名前:
+        <input type="text" name="name" value="" required>
+        <br><br>
+
+        生年月日:　
+        <select name="year" required>
+            <option value="" >----</option>
+            <% for(int i=1950; i<=2010; i++){ %>
+            <option value="<%=i%>" ><%=i%></option>
+            <% } %>
+        </select>年
+        <select name="month" required>
+            <option value="">--</option>
+            <% for(int i = 1; i<=12; i++){ %>
+            <option value="<%=i%>" ><%= i%></option>
+            <% } %>
+        </select>月
+        <select name="day" required>
+            <option value="">--</option>
+            <% for(int i = 1; i<=31; i++){ %>
+            <option value="<%=i%>"><%=i%></option>
+            <% } %>
+        </select>日
+        <br><br>
+
+        種別:
+        <br>
+            <% for(int i = 1; i<=3; i++){ %>
+            <input type="radio" name="type" value="<%=i%>" required><%=jh.exTypenum(i)%><br>
+            <% } %>
+        <br>
+
+        電話番号:
+        <input type="text" name="tell" value="" required>
+        <br><br>
+
+        自己紹介文
+        <br>
+        <textarea name="comment" rows=10 cols=50 style="resize:none" wrap="hard" required></textarea><br><br>
+         <input type="hidden" name="ac"  value="<%= hs.getAttribute("ac")%>">
+        <input type="submit" name="btnSubmit" value="確認画面へ">
+    </form>
+        <br>
+        <%=jh.home()%>
+    </body>
+</html>
+
+                                          updateresult.java
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        try {
+           request.setCharacterEncoding("UTF-8");//リクエストパラメータの文字コードをUTF-8に変更
+           HttpSession session =request.getSession();
+            String accesschk = request.getParameter("ac");
+            if(accesschk ==null || (Integer)session.getAttribute("ac")!=Integer.parseInt(accesschk)){
+                throw new Exception("不正なアクセスです");
+            }
+            
+           UserDataBeans udb = new UserDataBeans();
+           udb.setName(request.getParameter("name"));
+           udb.setYear(request.getParameter("year"));
+           udb.setMonth(request.getParameter("month"));
+           udb.setDay(request.getParameter("day"));
+           udb.setComment(request.getParameter("comment"));
+           udb.setType(request.getParameter("type"));
+           udb.setTell(request.getParameter("tell"));
+           
+           UserDataDTO update = new UserDataDTO();
+           udb.UD2DTOMapping(update);
+           
+           update.setUserID((Integer)session.getAttribute("userID"));
+           
+           UserDataDTO upresult = UserDataDAO.getInstance().update(update);
+           request.setAttribute("upresult",upresult);
+           session.invalidate();
+           request.getRequestDispatcher("/updateresult.jsp").forward(request, response);
+           
+         }catch(Exception e){
+            //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/error.jsp").forward(request, response);       
+        } finally {
+            out.close();
+        }
+    }
+
+                                updateresult.jsp
+<%@page import="jums.UserDataDTO"%>
+<%@page import="jums.JumsHelper" %>
+<%
+    JumsHelper jh = JumsHelper.getInstance();
+    UserDataDTO udd = (UserDataDTO)request.getAttribute("upresult");
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JUMS更新結果画面</title>
+    </head>
+    <body>
+        <h1>変更結果</h1><br>
+        名前:<%= udd.getName()%> <br>
+        生年月日:<%= udd.getBirthday()%><br>
+        種別:<%= udd.getType()%> <br>
+        電話番号:<%= udd.getTell()%> <br>
+        自己紹介:<%= udd.getComment()%> <br>
+        以上の内容で登録しました。<br>
+    
+    <%=jh.home()%>
+    </body>
+</html>
+
+                               delete.java
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        try {
+           HttpSession session = request.getSession();
+           session.setAttribute("ac", (int) (Math.random() * 1000));
+           UserDataDTO udd = (UserDataDTO)session.getAttribute("udd");
+           request.setAttribute("udd",udd);
+           request.getRequestDispatcher("/delete.jsp").forward(request, response);
+           
+        } finally {
+            out.close();
+        }
+    }
+
+                                  delete.jsp
+<%@page import="jums.JumsHelper"
+        import="jums.UserDataDTO" 
+        import="javax.servlet.http.HttpSession"%>
+<%
+    JumsHelper jh = JumsHelper.getInstance();
+    UserDataDTO udd = (UserDataDTO)request.getAttribute("udd");
+    HttpSession hs = request.getSession();
+%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+    </head>
+    <body>
+    <h1>削除確認</h1>
+    以下の内容を削除します。よろしいですか？
+    名前:<%= udd.getName()%><br>
+    生年月日:<%= udd.getBirthday()%><br>
+    種別:<%= udd.getType()%><br>
+    電話番号:<%= udd.getTell()%><br>
+    自己紹介:<%= udd.getComment()%><br>
+    登録日時:<%= udd.getNewDate()%><br>
+    
+    <form action="DeleteResult" method="POST">
+      <input type="hidden" name="ac"  value="<%= hs.getAttribute("ac")%>">
+      <input type="submit" name="YES" value="はい" style="width:100px">
+    </form><br>
+    <form action="ResultDetail" method="POST">
+      <input type="submit" name="NO" value="詳細画面に戻る" style="width:100px">
+    </form>
+    </body>
+</html>
+
+                             deleteresult.java
+  protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+         HttpSession session = request.getSession();
+        try {
+               String accesschk = request.getParameter("ac");
+            if(accesschk ==null || (Integer)session.getAttribute("ac")!=Integer.parseInt(accesschk)){
+                throw new Exception("不正なアクセスです");
+            }
+            
+           request.setCharacterEncoding("UTF-8");//リクエストパラメータの文字コードをUTF-8に変更
+           UserDataDTO udd = (UserDataDTO)session.getAttribute("udd");
+           UserDataDAO.getInstance().delete(udd);
+           
+           UserDataBeans udb = new UserDataBeans();
+           
+           session.invalidate();
+           
+           request.getRequestDispatcher("/deleteresult.jsp").forward(request, response);
+        }catch(Exception e){
+            //何らかの理由で失敗したらエラーページにエラー文を渡して表示。想定は不正なアクセスとDBエラー
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/error.jsp").forward(request, response);      
+        } finally {
+            out.close();
+        }
+    }
+
+                          deleteresult.jsp
+<%@page import="jums.JumsHelper" %>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<% JumsHelper jh = JumsHelper.getInstance();%>
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>削除結果画面</title>
+    </head>
+    <body>
+    <h1>削除確認</h1>
+    削除しました。<br>
+    
+     <%=jh.home()%>
+    </body>
+</html>
+
+                            UserDataDAO
+package jums;
+
+import base.DBManager;
+import java.sql.PreparedStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+
+/**
+ * ユーザー情報を格納するテーブルに対しての操作処理を包括する
+ * DB接続系はDBManagerクラスに一任
+ * 基本的にはやりたい1種類の動作に対して1メソッド
+ * @author hayashi-s
+ */
+public class UserDataDAO {
+    
+    //インスタンスオブジェクトを返却させてコードの簡略化
+    public static UserDataDAO getInstance(){
+        return new UserDataDAO();
+    }
+    
+    /**
+     * データの挿入処理を行う。現在時刻は挿入直前に生成
+     * @param ud 対応したデータを保持しているJavaBeans
+     * @throws SQLException 呼び出し元にcatchさせるためにスロー 
+     */
+    public void insert(UserDataDTO ud) throws SQLException{
+        Connection con = null;
+        PreparedStatement st = null;
+        try{
+            con = DBManager.getConnection();
+            st =  con.prepareStatement("INSERT INTO user_t(name,birthday,tell,type,comment,newDate) VALUES(?,?,?,?,?,?)");
+            st.setString(1, ud.getName());
+            st.setDate(2, new java.sql.Date(ud.getBirthday().getTime()));//指定のタイムスタンプ値からSQL格納用のDATE型に変更
+            st.setString(3, ud.getTell());
+            st.setInt(4, ud.getType());
+            st.setString(5, ud.getComment());
+            st.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
+            st.executeUpdate();
+            System.out.println("insert completed");
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+            throw new SQLException(e);
+        }finally{
+            if(con != null){
+                con.close();
+            }
+        }
+
+    }
+    
+    /**
+     * データの検索処理を行う。
+     * @param ud 対応したデータを保持しているJavaBeans
+     * @throws SQLException 呼び出し元にcatchさせるためにスロー 
+     * @return 検索結果
+     */
+    public UserDataDTO search(UserDataDTO ud) throws SQLException{
+        Connection con = null;
+        PreparedStatement st = null;
+        try{
+            con = DBManager.getConnection();
+            
+            //
+            String sql = "SELECT * FROM user_t";
+            boolean flag = false;
+            if (!ud.getName().equals("")) {
+                sql += " WHERE name like ?";
+                flag = true;
+            }
+            if (ud.getBirthday()!=null) {
+                if(!flag){
+                    sql += " WHERE birthday like ?";
+                    flag = true;
+                }else{
+                    sql += " AND birthday like ?";
+                }
+            }
+            if (ud.getType()!=0) {
+                if(!flag){
+                    sql += " WHERE type like ?";
+                }else{
+                    sql += " AND type like ?";
+                }
+            }
+            st =  con.prepareStatement(sql);
+            st.setString(1, "%"+ud.getName()+"%");
+            st.setString(2, "%"+ new SimpleDateFormat("yyyy").format(ud.getBirthday())+"%");
+            st.setInt(3, ud.getType());
+            
+            ResultSet rs = st.executeQuery();
+            rs.next();
+            UserDataDTO resultUd = new UserDataDTO();
+            resultUd.setUserID(rs.getInt("userID"));
+            resultUd.setName(rs.getString("name"));
+            resultUd.setBirthday(rs.getDate("birthday"));
+            resultUd.setTell(rs.getString("tell"));
+            resultUd.setType(rs.getInt("type"));
+            resultUd.setComment(rs.getString("comment"));
+            resultUd.setNewDate(rs.getTimestamp("newDate"));
+            
+            System.out.println("search completed");
+
+            return resultUd;
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+            throw new SQLException(e);
+        }finally{
+            if(con != null){
+                con.close();
+            }
+        }
+
+    }
+    
+    /**
+     * ユーザーIDによる1件のデータの検索処理を行う。
+     * @param ud 対応したデータを保持しているJavaBeans
+     * @throws SQLException 呼び出し元にcatchさせるためにスロー 
+     * @return 検索結果
+     */
+    public UserDataDTO searchByID(UserDataDTO ud) throws SQLException{
+        Connection con = null;
+        PreparedStatement st = null;
+        try{
+            con = DBManager.getConnection();
+            
+            String sql = "SELECT * FROM user_t WHERE userID = ?";
+            
+            st =  con.prepareStatement(sql);
+            st.setInt(1, ud.getUserID());
+            
+            ResultSet rs = st.executeQuery();
+            rs.next();
+            UserDataDTO resultUd = new UserDataDTO();
+            resultUd.setUserID(rs.getInt(1));
+            resultUd.setName(rs.getString(2));
+            resultUd.setBirthday(rs.getDate(3));
+            resultUd.setTell(rs.getString(4));
+            resultUd.setType(rs.getInt(5));
+            resultUd.setComment(rs.getString(6));
+            resultUd.setNewDate(rs.getTimestamp(7));
+            
+            System.out.println("searchByID completed");
+
+            return resultUd;
+        }catch(SQLException e){
+            System.out.println(e.getMessage());
+            throw new SQLException(e);
+        }finally{
+            if(con != null){
+                con.close();
+            }
+        }
+
+    }
+    
+    public UserDataDTO update(UserDataDTO ud) throws SQLException{
+        Connection con = null;
+        PreparedStatement st = null;
+        try{
+            con = DBManager.getConnection();
+             String sql = "update user_t set";
+            boolean flag = false;
+            if (!ud.getName().equals("")) {
+                sql += " name = ?";
+                flag = true;
+            }
+            if (ud.getBirthday()!=null) {
+                if(!flag){
+                    sql += " birthday = ?";
+                    flag = true;
+                }else{
+                    sql += ", birthday = ?";
+                }
+            }
+            if (ud.getType()!=0) {
+                if(!flag){
+                    sql += " type = ?";
+                }else{
+                    sql += ", type = ?";
+                }
+            }
+            if(!ud.getTell().equals("")){
+                if(!flag){
+                    sql += "tell = ?";
+                }else{
+                    sql += ", tell = ?";
+                }
+            }
+           if(!ud.getComment().equals("")){
+                if(!flag){
+                    sql += " comment = ?";
+                }else{
+                    sql += ", comment = ?";
+                }
+           }
+          sql += " where userID = ?";
+          st = con.prepareStatement(sql);
+          st.setString(1,ud.getName());
+          st.setDate(2, new java.sql.Date(ud.getBirthday().getTime()));
+          st.setInt(3, ud.getType());
+          st.setString(4,ud.getTell());
+          st.setString(5,ud.getComment());
+          st.setInt(6, ud.getUserID());
+          st.executeUpdate();
+          st = con.prepareStatement("select * from user_t where userID = ?");
+          st.setInt(1, ud.getUserID());
+           ResultSet rs = st.executeQuery();
+            rs.next();
+            UserDataDTO resultUd = new UserDataDTO();
+            resultUd.setUserID(rs.getInt(1));
+            resultUd.setName(rs.getString(2));
+            resultUd.setBirthday(rs.getDate(3));
+            resultUd.setTell(rs.getString(4));
+            resultUd.setType(rs.getInt(5));
+            resultUd.setComment(rs.getString(6));
+            resultUd.setNewDate(rs.getTimestamp(7));
+            
+            return resultUd;
+          
+    }catch(SQLException e){
+        System.out.print(e.getMessage());
+         throw new SQLException(e);
+    }finally{
+            if(con != null){
+            con.close();
+            }
+        }
+        }
+    
+    public void delete(UserDataDTO ud)throws SQLException{
+        Connection con = null;
+        PreparedStatement st = null;
+        try{
+            con = DBManager.getConnection();
+            String str = "delete from user_t where userID = ?";
+            st = con.prepareStatement(str); 
+            st.setInt(1, ud.getUserID());
+            st.executeUpdate();
+            st = con.prepareStatement("select * from user_t where ?");
+            st.setInt(1, ud.getUserID());
+            st.executeQuery();
+        }catch(SQLException e){
+            System.out.print(e.getMessage());
+            throw new SQLException(e);
+        }finally{
+            if(con != null){
+                con.close();
+            }
+        }
+        
+    }
+}
+
+       
+
+
+
+                                 
+
+
